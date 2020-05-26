@@ -48,6 +48,7 @@ from loyaltycard.api.serializers import LoyaltycardSerializer
 from rest_framework import generics
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 @permission_classes((IsAuthenticated,))
 class LoyaltycardList(generics.ListCreateAPIView):
@@ -56,9 +57,24 @@ class LoyaltycardList(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+@permission_classes((IsAuthenticated,))
 class LoyaltycardDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Loyaltycard.objects.all()
     serializer_class = LoyaltycardSerializer
+    
     def perform_destroy(self, instance):
         if instance.owner == self.request.user:
             instance.delete()
+    
+    def perform_update(self, serializer):
+        instance = self.get_object()
+        if instance.owner == self.request.user:
+            serializer.save()
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.owner == self.request.user:
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        return Response(status=403)
+
