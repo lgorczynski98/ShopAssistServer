@@ -1,20 +1,20 @@
-from loyaltycard.models import Loyaltycard
-from loyaltycard.api.serializers import LoyaltycardSerializer
+from receipt.models import Receipt
+from receipt.api.serializers import ReceiptSerializer
 from rest_framework import generics
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 @permission_classes((IsAuthenticated,))
-class LoyaltycardList(generics.ListCreateAPIView):
-    queryset = Loyaltycard.objects.all()
-    serializer_class = LoyaltycardSerializer
+class ReceiptList(generics.ListCreateAPIView):
+    queryset = Receipt.objects.all()
+    serializer_class = ReceiptSerializer
     
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
-
+    
     def list(self, request, *args, **kwargs):
-        queryset = Loyaltycard.objects.filter(owner=request.user)
+        queryset = Receipt.objects.filter(owner=request.user)
         queryset = self.filter_queryset(queryset)
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -25,10 +25,10 @@ class LoyaltycardList(generics.ListCreateAPIView):
         
 
 @permission_classes((IsAuthenticated,))
-class LoyaltycardDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Loyaltycard.objects.all()
-    serializer_class = LoyaltycardSerializer
-    
+class ReceiptDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Receipt.objects.all()
+    serializer_class = ReceiptSerializer
+
     def perform_destroy(self, instance):
         if instance.owner == self.request.user:
             instance.delete()
@@ -44,4 +44,3 @@ class LoyaltycardDetail(generics.RetrieveUpdateDestroyAPIView):
             serializer = self.get_serializer(instance)
             return Response(serializer.data)
         return Response(status=403)
-

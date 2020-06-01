@@ -20,4 +20,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('loyaltycard.api.urls')),
     path('', include('account.api.urls')),
+    path('', include('receipt.api.urls')),
 ]
