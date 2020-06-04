@@ -4,6 +4,8 @@ from rest_framework import generics
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.http import FileResponse
+from rest_framework.decorators import api_view
 
 @permission_classes((IsAuthenticated,))
 class ReceiptList(generics.ListCreateAPIView):
@@ -43,4 +45,32 @@ class ReceiptDetail(generics.RetrieveUpdateDestroyAPIView):
         if instance.owner == self.request.user:
             serializer = self.get_serializer(instance)
             return Response(serializer.data)
-        return Response(status=403)
+        data = {}
+        data['detail'] = "You don't have permission"
+        return Response(data, status=403)
+
+
+@permission_classes((IsAuthenticated,))
+@api_view(['GET',])
+def get_receipt_image(request, receipt_id):
+    receipt = Receipt.objects.get(id=receipt_id)
+    if receipt.owner == request.user:
+        img = open(receipt.image.path, 'rb')
+        response = FileResponse(img)
+        return response
+    data = {}
+    data['detail'] = "You don't have permission"
+    return Response(data, status=403)
+
+
+@permission_classes((IsAuthenticated,))
+@api_view(['GET',])
+def get_thumbnail_image(request, receipt_id):
+    receipt = Receipt.objects.get(id=receipt_id)
+    if receipt.owner == request.user:
+        img = open(receipt.thumbnail.path, 'rb')
+        response = FileResponse(img)
+        return response
+    data = {}
+    data['detail'] = "You don't have permission"
+    return Response(data, status=403)

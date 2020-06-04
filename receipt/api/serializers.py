@@ -5,4 +5,4 @@ class ReceiptSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
     class Meta:
         model = Receipt
-        fields = ['id', 'title', 'shop_name', 'purchase_date', 'purchase_cost', 'return_time', 'warranty_time', 'image', 'owner']
+        fields = ['id', 'title', 'shop_name', 'purchase_date', 'purchase_cost', 'return_time', 'warranty_time', 'image', 'thumbnail', 'owner']

@@ -43,5 +43,7 @@ class LoyaltycardDetail(generics.RetrieveUpdateDestroyAPIView):
         if instance.owner == self.request.user:
             serializer = self.get_serializer(instance)
             return Response(serializer.data)
-        return Response(status=403)
+        data = {}
+        data['detail'] = "You don't have permission"
+        return Response(data, status=403)
 

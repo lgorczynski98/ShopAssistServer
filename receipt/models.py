@@ -8,7 +8,8 @@ class Receipt(models.Model):
     purchase_cost = models.FloatField()
     return_time = models.DateField()
     warranty_time = models.DateField()
-    image = models.ImageField(upload_to='receipts')
+    image = models.ImageField(upload_to='receipts', blank=False, null=False)
+    thumbnail = models.ImageField(upload_to='thumbnails', default='thumbnails/default.jpg')
     owner = models.ForeignKey('account.Account', related_name='receipts', on_delete=models.CASCADE)
 
     def __str__(self):
