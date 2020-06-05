@@ -4,6 +4,8 @@ from rest_framework import generics
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.http import FileResponse
+from rest_framework.decorators import api_view
 
 @permission_classes((IsAuthenticated,))
 class LoyaltycardList(generics.ListCreateAPIView):
@@ -47,3 +49,15 @@ class LoyaltycardDetail(generics.RetrieveUpdateDestroyAPIView):
         data['detail'] = "You don't have permission"
         return Response(data, status=403)
 
+
+@permission_classes((IsAuthenticated,))
+@api_view(['GET',])
+def get_loyaltycard_image(request, loyaltycard_id):
+    loyaltycard = Loyaltycard.objects.get(id=loyaltycard_id)
+    if loyaltycard.owner == request.user:
+        img = open(loyaltycard.image.path, 'rb')
+        response = FileResponse(img)
+        return response
+    data = {}
+    data['detail'] = "You don't have permission"
+    return Response(data, status=403)
