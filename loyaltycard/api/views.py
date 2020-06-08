@@ -40,6 +40,15 @@ class LoyaltycardDetail(generics.RetrieveUpdateDestroyAPIView):
         if instance.owner == self.request.user:
             serializer.save()
 
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.owner == request.user:
+            kwargs['partial'] = True
+            return self.update(request, *args, **kwargs)
+        data = {}
+        data['detail'] = "You don't have permission"
+        return Response(data, status=403)
+
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.owner == self.request.user:
