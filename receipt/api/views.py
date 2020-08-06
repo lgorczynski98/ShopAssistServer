@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.http import FileResponse
 from rest_framework.decorators import api_view
+import os
 
 @permission_classes((IsAuthenticated,))
 class ReceiptList(generics.ListCreateAPIView):
@@ -33,6 +34,8 @@ class ReceiptDetail(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_destroy(self, instance):
         if instance.owner == self.request.user:
+            os.remove(instance.image.path)
+            os.remove(instance.thumbnail.path)
             instance.delete()
     
     def perform_update(self, serializer):
