@@ -34,7 +34,8 @@ class LoyaltycardDetail(generics.RetrieveUpdateDestroyAPIView):
     
     def perform_destroy(self, instance):
         if instance.owner == self.request.user:
-            os.remove(instance.image.path)
+            if instance.image.name != 'loyaltycards/default.jpg':
+                os.remove(instance.image.path)
             instance.delete()
     
     def perform_update(self, serializer):

@@ -35,7 +35,8 @@ class ReceiptDetail(generics.RetrieveUpdateDestroyAPIView):
     def perform_destroy(self, instance):
         if instance.owner == self.request.user:
             os.remove(instance.image.path)
-            os.remove(instance.thumbnail.path)
+            if instance.image.name != 'thumbnail/default.jpg':
+                os.remove(instance.thumbnail.path)
             instance.delete()
     
     def perform_update(self, serializer):
