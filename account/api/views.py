@@ -7,6 +7,7 @@ from account.api.serializers import AccountSerializer
 from account.models import Account
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import authentication_classes, permission_classes
+from rest_framework.authtoken.views import ObtainAuthToken
 
 class AccountList(generics.ListAPIView):
     queryset = Account.objects.all()
@@ -16,6 +17,18 @@ class AccountList(generics.ListAPIView):
 class AccountDetail(generics.RetrieveUpdateAPIView):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
+
+
+class CustomAuthToken(ObtainAuthToken):
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token = Token.objects.get(user=user)
+        return Response({
+            'token': token.key,
+            'user_id': user.pk,
+        })
 
 
 @api_view(['POST',])

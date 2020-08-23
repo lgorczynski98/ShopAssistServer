@@ -6,7 +6,7 @@ class AccountSerializer(serializers.ModelSerializer):
     loyaltycards = serializers.PrimaryKeyRelatedField(many=True, queryset=Loyaltycard.objects.all())
     class Meta:
         model = Account
-        fields = ['id', 'username', 'email', 'loyaltycards']
+        fields = ['id', 'username', 'email', 'loyaltycards', 'device_registration_token']
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
