@@ -1,4 +1,5 @@
 from loyaltycard.models import Loyaltycard
+from account.models import Account
 from loyaltycard.api.serializers import LoyaltycardSerializer
 from rest_framework import generics
 from rest_framework.decorators import permission_classes
@@ -7,6 +8,10 @@ from rest_framework.response import Response
 from django.http import FileResponse
 from rest_framework.decorators import api_view
 import os
+from django.core.files.base import ContentFile
+import string
+import random
+
 
 @permission_classes((IsAuthenticated,))
 class LoyaltycardList(generics.ListCreateAPIView):
@@ -73,3 +78,30 @@ def get_loyaltycard_image(request, loyaltycard_id):
     data = {}
     data['detail'] = "You don't have permission"
     return Response(data, status=403)
+
+@permission_classes((IsAuthenticated,))
+@api_view(['POST',])
+def share_loyalty_card(request, loyaltycard_id, username):
+    loyaltycard = Loyaltycard.objects.get(id=loyaltycard_id)
+    data = {}
+    if loyaltycard.owner == request.user:
+        try:
+            user_to_share = Account.objects.get(username=username)
+            loyaltycard.pk = None
+            if loyaltycard.image.name != 'loyaltycards/default.jpg':
+                original_image = ContentFile(loyaltycard.image.read())
+                letters = string.ascii_lowercase
+                random_str = ''.join(random.choice(letters) for i in range(20))
+                image_copy_name = random_str + '.jpg'
+                loyaltycard.image.save(image_copy_name, original_image)
+            loyaltycard.owner = user_to_share
+            loyaltycard.save()
+        except:
+            data['detail'] = "User with username: " + username + " doesn't exist"
+            return Response(data)
+        data['usernameFrom'] = loyaltycard.owner.username
+        data['usernameTo'] = user_to_share.username
+        data['loyaltycardID'] = loyaltycard.pk
+    else:
+        data['detail'] = "You don't have permission"
+    return Response(data)
