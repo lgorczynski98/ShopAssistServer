@@ -9,9 +9,11 @@ from django.http import FileResponse
 from rest_framework.decorators import api_view
 import os
 from django.core.files.base import ContentFile
+from pyfcm import FCMNotification
 import string
 import random
 
+FIREBASE_API_KEY = 'AAAAPkSbPLg:APA91bENvZODi1GwJkXOj886CRkr2EkIS9g1seuJ2hDQnkll5cFpe7seLQdjPTX6sjm_5xjIIz7QGSYtGptZSoiz4K2dSX6cv47wyfJugryjmWBAtoT9DU4edOs1qla2NYzmJjbm0pXP'
 
 @permission_classes((IsAuthenticated,))
 class LoyaltycardList(generics.ListCreateAPIView):
@@ -96,6 +98,7 @@ def share_loyalty_card(request, loyaltycard_id, username):
                 loyaltycard.image.save(image_copy_name, original_image)
             loyaltycard.owner = user_to_share
             loyaltycard.save()
+            send_notification(user_to_share, loyaltycard.title)
         except:
             data['detail'] = "User with username: " + username + " doesn't exist"
             return Response(data)
@@ -105,3 +108,11 @@ def share_loyalty_card(request, loyaltycard_id, username):
     else:
         data['detail'] = "You don't have permission"
     return Response(data)
+
+
+def send_notification(user_to_send, loyaltycard_title):
+    push_service = FCMNotification(FIREBASE_API_KEY)
+    registration_id = user_to_send.device_registration_token
+    message_title = loyaltycard_title
+    message_body = user_to_send.username + ' send you his loyalty card!'
+    push_service.notify_single_device(registration_id=registration_id, message_title=message_title, message_body=message_body)
