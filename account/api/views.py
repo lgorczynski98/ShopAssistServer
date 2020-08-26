@@ -59,7 +59,8 @@ def change_username(request):
         user = request.user
         user.username = profile_info.username
         user.save()
-        data['new_username'] = user.username
+        data['username'] = user.username
+        data['detail'] = 'Username changed to: ' + user.username
     else:
         data['detail'] = serializer.errors
     return Response(data)
@@ -74,7 +75,8 @@ def change_email(request):
         user = request.user
         user.email = profile_info.email
         user.save()
-        data['new_email'] = user.email
+        data['email'] = user.email
+        data['detail'] = 'Email changed to: ' + user.email
     else:
         data['detail'] = serializer.errors
     return Response(data)
@@ -87,10 +89,9 @@ def change_password(request):
     if serializer.is_valid():
         profile_info = serializer.save()
         user = request.user
-        data['old_password'] = user.password
         user.set_password(profile_info.password)
         user.save()
-        data['new_password'] = user.password
+        data['detail'] = 'Password changed'
     else:
         data['detail'] = serializer.errors
     return Response(data)
