@@ -5,7 +5,9 @@ from rest_framework.decorators import api_view
 from account.api.serializers import RegistrationSerializer
 from account.api.serializers import AccountSerializer
 from account.models import Account
-from account.api.serializers import ProfilesInfoSerializer
+from account.api.serializers import UsernameInfoSerializer
+from account.api.serializers import EmailInfoSerializer
+from account.api.serializers import PasswordInfoSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -52,15 +54,18 @@ def registration_view(request):
 @api_view(['POST',])
 @permission_classes([IsAuthenticated,])
 def change_username(request):
-    serializer = ProfilesInfoSerializer(data=request.data)
+    serializer = UsernameInfoSerializer(data=request.data)
     data = {}
     if serializer.is_valid():
         profile_info = serializer.save()
         user = request.user
         user.username = profile_info.username
-        user.save()
-        data['username'] = user.username
-        data['detail'] = 'Username changed to: ' + user.username
+        try:
+            user.save()
+            data['username'] = user.username
+            data['detail'] = 'Username changed to: ' + user.username
+        except :
+            data['detail'] = 'User with that username already exists'
     else:
         data['detail'] = serializer.errors
     return Response(data)
@@ -68,15 +73,18 @@ def change_username(request):
 @api_view(['POST',])
 @permission_classes([IsAuthenticated,])
 def change_email(request):
-    serializer = ProfilesInfoSerializer(data=request.data)
+    serializer = EmailInfoSerializer(data=request.data)
     data = {}
     if serializer.is_valid():
         profile_info = serializer.save()
         user = request.user
         user.email = profile_info.email
-        user.save()
-        data['email'] = user.email
-        data['detail'] = 'Email changed to: ' + user.email
+        try:
+            user.save()
+            data['email'] = user.email
+            data['detail'] = 'Email changed to: ' + user.email
+        except :
+            data['detail'] = 'User with that email already exists'
     else:
         data['detail'] = serializer.errors
     return Response(data)
@@ -84,14 +92,17 @@ def change_email(request):
 @api_view(['POST',])
 @permission_classes([IsAuthenticated,])
 def change_password(request):
-    serializer = ProfilesInfoSerializer(data=request.data)
+    serializer = PasswordInfoSerializer(data=request.data)
     data = {}
     if serializer.is_valid():
         profile_info = serializer.save()
         user = request.user
-        user.set_password(profile_info.password)
-        user.save()
-        data['detail'] = 'Password changed'
+        if user.check_password(profile_info.password):
+            user.set_password(profile_info.new_password)
+            user.save()
+            data['detail'] = 'Password changed'
+        else:
+            data['detail'] = 'Wrong password'
     else:
         data['detail'] = serializer.errors
     return Response(data)

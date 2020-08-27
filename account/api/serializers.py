@@ -27,17 +27,35 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return account
 
 
-class ProfilesInfo():
-    def __init__(self, username=None, email=None, password=None):
-        self.username = username or None
-        self.email = email or None
-        self.password = password or None
+class UsernameInfo():
+    def __init__(self, username):
+        self.username = username
+
+class EmailInfo():
+    def __init__(self, email):
+        self.email = email
+
+class PasswordInfo():
+    def __init__(self, password, new_password):
+        self.password = password
+        self.new_password = new_password
 
 
-class ProfilesInfoSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=30, required=False)
-    email = serializers.EmailField(required=False)
-    password = serializers.CharField(max_length=30, required=False)
+class UsernameInfoSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=30)
 
     def create(self, validated_data):
-        return ProfilesInfo(**validated_data)
+        return UsernameInfo(**validated_data)
+
+class EmailInfoSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def create(self, validated_data):
+        return EmailInfo(**validated_data)
+
+class PasswordInfoSerializer(serializers.Serializer):
+    password = serializers.CharField(max_length=30)
+    new_password = serializers.CharField(max_length=30)
+
+    def create(self, validated_data):
+        return PasswordInfo(**validated_data)
