@@ -115,4 +115,8 @@ def send_notification(user_to_send, loyaltycard_title):
     registration_id = user_to_send.device_registration_token
     message_title = loyaltycard_title
     message_body = user_to_send.username + ' send you his loyalty card!'
-    push_service.notify_single_device(registration_id=registration_id, message_title=message_title, message_body=message_body)
+    extra_notification_kwargs = {
+    'image': 'https://shopassist.azurewebsites.net/logo/'
+    }
+    push_service.notify_single_device(registration_id=registration_id, message_title=message_title, message_body=message_body, extra_notification_kwargs=extra_notification_kwargs)
+

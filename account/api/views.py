@@ -1,6 +1,7 @@
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.response import Response
+from django.http import FileResponse
 from rest_framework.decorators import api_view
 from account.api.serializers import RegistrationSerializer
 from account.api.serializers import AccountSerializer
@@ -43,12 +44,18 @@ def registration_view(request):
         serializer = RegistrationSerializer(data=request.data)
         data = {}
         if serializer.is_valid():
-            account = serializer.save()
-            data['username'] = account.username
-            token = Token.objects.get(user=account).key
-            data['token'] = token
+            try:
+                account = serializer.save()
+                data['username'] = account.username
+                token = Token.objects.get(user=account).key
+                data['token'] = token
+            except :
+                data['detail'] = serializer.errors
         else:
-            data = serializer.errors
+            if serializer.errors.get('email') is not None:
+                data['detail_email'] = serializer.errors.get('email')[0].capitalize()
+            if serializer.errors.get('username') is not None:
+                data['detail_username'] = serializer.errors.get('username')[0].capitalize()
         return Response(data)
 
 @api_view(['POST',])
@@ -106,3 +113,12 @@ def change_password(request):
     else:
         data['detail'] = serializer.errors
     return Response(data)
+
+
+@api_view(['GET',])
+@authentication_classes([])
+@permission_classes([])
+def get_logo(request):
+    img = open('media/logo/logo.png', 'rb')
+    response = FileResponse(img)
+    return response

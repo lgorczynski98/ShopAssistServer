@@ -9,5 +9,6 @@ urlpatterns = [
     path('account/<int:pk>/', views.AccountDetail.as_view()),
     path('account/changeusername/', views.change_username),
     path('account/changeemail/', views.change_email),
-    path('account/changepassword/', views.change_password)
+    path('account/changepassword/', views.change_password),
+    path('logo/', views.get_logo)
 ]
