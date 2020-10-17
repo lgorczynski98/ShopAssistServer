@@ -12,6 +12,7 @@ from django.core.files.base import ContentFile
 from pyfcm import FCMNotification
 import string
 import random
+from datetime import datetime
 
 FIREBASE_API_KEY = 'AAAAPkSbPLg:APA91bENvZODi1GwJkXOj886CRkr2EkIS9g1seuJ2hDQnkll5cFpe7seLQdjPTX6sjm_5xjIIz7QGSYtGptZSoiz4K2dSX6cv47wyfJugryjmWBAtoT9DU4edOs1qla2NYzmJjbm0pXP'
 
@@ -92,31 +93,40 @@ def share_loyalty_card(request, loyaltycard_id, username):
             loyaltycard.pk = None
             if loyaltycard.image.name != 'loyaltycards/default.jpg':
                 original_image = ContentFile(loyaltycard.image.read())
-                letters = string.ascii_lowercase
-                random_str = ''.join(random.choice(letters) for i in range(20))
-                image_copy_name = random_str + '.jpg'
+                now = datetime.now()
+                digits = string.digits
+                random_part = ''.join(random.choice(digits) for i in range(18))
+                date_part = str(now.year) + str(now.month) + str(now.day) + '_' + str(now.hour) + str(now.minute) + str(now.second)
+                image_copy_name = 'JPEG_' + date_part + '_' + random_part + '.jpg'
                 loyaltycard.image.save(image_copy_name, original_image)
             loyaltycard.owner = user_to_share
             loyaltycard.save()
-            send_notification(user_to_share, loyaltycard.title)
-        except:
+            data['usernameFrom'] = loyaltycard.owner.username
+            data['usernameTo'] = user_to_share.username
+            data['loyaltycardID'] = loyaltycard.pk
+            send_notification(user_to_share, request.user, loyaltycard.title)
+        except Account.DoesNotExist:
             data['detail'] = "User with username: " + username + " doesn't exist"
             return Response(data)
-        data['usernameFrom'] = loyaltycard.owner.username
-        data['usernameTo'] = user_to_share.username
-        data['loyaltycardID'] = loyaltycard.pk
+        except Exception as e:
+            data['detail'] = str(e)
+            return Response(data)
     else:
         data['detail'] = "You don't have permission"
     return Response(data)
 
 
-def send_notification(user_to_send, loyaltycard_title):
+def send_notification(user_to_send, user_from, loyaltycard_title):
     push_service = FCMNotification(FIREBASE_API_KEY)
     registration_id = user_to_send.device_registration_token
     message_title = loyaltycard_title
-    message_body = user_to_send.username + ' send you his loyalty card!'
+    message_body = user_from.username + ' send you his loyalty card!'
     extra_notification_kwargs = {
     'image': 'https://shopassist.azurewebsites.net/logo/'
     }
-    push_service.notify_single_device(registration_id=registration_id, message_title=message_title, message_body=message_body, extra_notification_kwargs=extra_notification_kwargs)
+    try:
+        push_service.notify_single_device(registration_id=registration_id, message_title=message_title, message_body=message_body, extra_notification_kwargs=extra_notification_kwargs)
+    except:
+        # exception when user_to_share is not logged in anywhere
+        pass
 
