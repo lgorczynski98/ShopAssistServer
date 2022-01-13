@@ -1,6 +1,6 @@
 django==2.1.12
 djangorestframework==3.11.0
-Pillow==7.1.2
+Pillow==9.0.0
 pyodbc==4.0.30
 django-pyodbc-azure==2.1.0.0
 pyfcm==1.4.7
